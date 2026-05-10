@@ -1,0 +1,11 @@
+{
+  "weight_state": 0.675,
+  "validation_mae_kw": 11.383712690111194,
+  "validation_rmse_kw": 22.089418308001832,
+  "validation_score": 14.697125436311469,
+  "horizon_steps": 4,
+  "horizon_min": 60,
+  "structural_component": "pg_gru_no_envelope",
+  "state_component": "pg_gru_apsc",
+  "selection_rule": "minimize validation MAE + 0.15 * validation RMSE"
+}
