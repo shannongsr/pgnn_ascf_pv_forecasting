@@ -1,0 +1,12 @@
+{
+  "weight_state": 0.775,
+  "validation_mae_kw": 5.62179667883409,
+  "validation_rmse_kw": 12.962982030680125,
+  "validation_score": 7.566243983436109,
+  "horizon_steps": 1,
+  "horizon_min": 15,
+  "structural_component": "pgnn",
+  "state_component": "pgnn_apsc",
+  "selection_rule": "minimize validation MAE + 0.15 * validation RMSE",
+  "trainable_parameter_increment": 0
+}

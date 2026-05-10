@@ -1,42 +1,46 @@
-# PG-GRU-ASCF PV Forecasting
+# PGNN-ASCF PV Forecasting
 
-This repository provides the companion code package for the manuscript on
-physics-guided photovoltaic (PV) power forecasting. It is prepared as a compact
-verification repository for reproducing the CSV results from the trained
-PG-GRU-ASCF model used in the article.
+This repository provides the companion code package for the manuscript
+**"Physics Guided Neural Forecasting with Adaptive State-Consistent Fusion for
+Real-Time Photovoltaic Power Prediction"**.
+
+The main model in the article is **PGNN-ASCF**, a compact physics-guided neural
+network with adaptive state-consistent fusion for real-time photovoltaic (PV)
+power forecasting. The repository is prepared as a focused verification package:
+it loads the trained models, reconstructs the chronological test set, and writes
+CSV prediction and metric outputs. Plotting scripts, exploratory notebooks,
+figure generation, and manuscript source files are intentionally excluded.
 
 Author: Shirong Guo  
 Contact: shirong.guo@monash.edu
 
-The repository is intentionally limited to model verification and CSV output.
-Plotting scripts, figure generation, exploratory analysis, and manuscript source
-files are not included.
+## Model Summary
 
-## Overview
+PGNN-ASCF combines four elements:
 
-The released code verifies a physics-guided gated recurrent unit model with
-adaptive state-consistent fusion (PG-GRU-ASCF) for short-term PV power
-forecasting. The model combines sequence learning with physically informed
-constraints and state correction so that predictions remain consistent with
-irradiance, daytime state, and PV generation capacity.
+- A physical PV potential envelope based on irradiance, temperature, and rated
+  PV capacity.
+- A compact feedforward PGNN structural forecaster that predicts a bounded
+  correction around the physical envelope.
+- Adaptive physical state correction (APSC), which uses recent PV and irradiance
+  changes to form a deterministic state-updated candidate.
+- Adaptive state-consistent fusion (ASCF), which selects the final fusion weight
+  on the validation set without using test data.
 
-Two forecasting horizons are included:
+The manuscript also compares PGNN-ASCF with a higher-latency recurrent reference,
+**PG-GRU-ASCF**. This repository therefore retains the PG-GRU-ASCF checkpoints
+only as a comparison model; PGNN-ASCF is the primary released model.
 
-- `h1`: 15-minute-ahead PV power forecasting.
-- `h4`: 60-minute-ahead PV power forecasting.
-
-The verification workflow loads the trained checkpoints, reconstructs the test
-sequences from the processed 15-minute dataset, applies the PG-GRU-ASCF fusion
-step, and exports prediction and metric tables as CSV files.
-
-## Contents
+## Repository Contents
 
 - `data/merged_dataset_15min.csv`: processed 15-minute PV, weather, and temporal
-  feature source data.
-- `models/`: trained PG-GRU checkpoints, sequence scalers, and ASCF fusion
-  weights for both horizons.
-- `verify_trained_model.py`: verification script that loads the released models
-  and writes CSV results.
+  source data.
+- `data/daily_classification.csv`: daily regime labels used to reconstruct the
+  PGNN feature matrix.
+- `models/pgnn_*`: trained PGNN checkpoints, scalers, and ASCF fusion weights.
+- `models/pg_gru_*` and `models/sequence_scaler_*`: PG-GRU-ASCF reference
+  artifacts used for manuscript comparison.
+- `verify_trained_model.py`: verification script that writes CSV outputs only.
 - `outputs/`: generated prediction and metric CSV files.
 - `requirements.txt`: minimal Python dependencies.
 
@@ -50,17 +54,16 @@ pip install -r requirements.txt
 
 ## Run
 
-From this directory:
+From the repository root:
 
 ```bash
 python verify_trained_model.py
 ```
 
-CSV outputs are written to `outputs/`:
+The default run verifies both article horizons:
 
-- `pg_gru_ascf_predictions_h1.csv`
-- `pg_gru_ascf_predictions_h4.csv`
-- `pg_gru_ascf_metrics.csv`
+- `h1`: 15-minute-ahead PV power forecasting.
+- `h4`: 60-minute-ahead PV power forecasting.
 
 To verify only one horizon:
 
@@ -69,26 +72,26 @@ python verify_trained_model.py --horizons 1
 python verify_trained_model.py --horizons 4
 ```
 
-## Output Description
+## CSV Outputs
 
-Each prediction CSV contains:
+The script writes:
 
-- `timestamp`: input timestamp.
-- `target_timestamp`: forecast target timestamp.
-- `y_true_kw`: observed PV power.
-- `pg_gru_no_envelope_kw`: structural sequence model prediction.
-- `pg_gru_raw_kw`: physics-guided GRU prediction before state correction.
-- `pg_gru_apsc_kw`: adaptive physical state correction output.
-- `pg_gru_ascf_kw`: final PG-GRU-ASCF prediction.
+- `outputs/pgnn_ascf_predictions_h1.csv`
+- `outputs/pgnn_ascf_predictions_h4.csv`
+- `outputs/model_comparison_metrics.csv`
 
-The metric CSV reports MAE, RMSE, normalized RMSE, and R2 for each forecasting
-horizon.
+Each prediction CSV contains the input timestamp, forecast target timestamp,
+observed PV power, PGNN structural prediction, PGNN-APSC prediction, final
+PGNN-ASCF prediction, and the PG-GRU-ASCF reference prediction.
+
+The metric CSV reports MAE, RMSE, normalized RMSE, and R2 for PGNN, PGNN-APSC,
+PGNN-ASCF, and the PG-GRU-ASCF reference at each horizon.
 
 ## Notes
 
-The test period starts on 2025-01-01. Each prediction CSV includes the input
-timestamp, forecast target timestamp, observed PV power, intermediate model
-components, and final PG-GRU-ASCF prediction.
+The chronological test period starts on 2025-01-01. The package is intended to
+support verification of the trained article models and the CSV results, not to
+retrain models or regenerate figures.
 
 For questions about the repository or manuscript code, please contact Shirong
 Guo at shirong.guo@monash.edu.
